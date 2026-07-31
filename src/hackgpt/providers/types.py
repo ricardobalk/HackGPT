@@ -5,9 +5,9 @@ from __future__ import annotations
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Protocol, TypeAlias, runtime_checkable
+from typing import Protocol, runtime_checkable
 
-OptionValue: TypeAlias = bool | int | float | str
+type OptionValue = bool | int | float | str
 
 
 class Capability(StrEnum):
