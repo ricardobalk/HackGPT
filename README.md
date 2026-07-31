@@ -1,87 +1,110 @@
 # HackGPT
 
-Welcome to HackGPT, a powerful and customizable AI chatbot interface designed specifically for developers. With a ChatGPT-like experience, HackGPT brings a host of key features to enhance your hacking capabilities and empower your development process.
+HackGPT is a Streamlit chat interface with provider-neutral model discovery,
+streaming, setup prompts, and schema-driven generation controls.
 
 [![HackGPT Demo](static/images/demo.gif)](./static/images/demo.gif)
 
-## Current Features
+## Features
 
-- **ChatGPT-like Interface**: Immerse yourself in a chat-like environment with responses streamed as they are generated.
+- **Multiple providers**: Use OpenAI, Anthropic Claude, or Ollama without changing
+  the chat interface.
+- **Dynamic model discovery**: The model picker reflects the models available to
+  the configured account or Ollama host. Models can be refreshed from the sidebar.
+- **Capability-aware configuration**: Every model supplies its own typed option
+  schema, including defaults, ranges, choices, and conditional fields. Unsupported
+  controls are never sent to a provider.
+- **Provider-neutral chat**: Text history and system prompts remain usable when
+  switching between compatible providers and models.
+- **Streaming responses**: All provider adapters stream response text into the
+  existing chat interface.
+- **Setup prompts and historical context**: Select a bundled or custom setup prompt
+  and optionally add a validated historical knowledge cutoff.
 
-- **Model Selection**: Choose from GPT-5.6, GPT-4.1, and GPT-4o models. Compatible models also expose reasoning effort, reasoning mode, and response detail controls.
+The capability model already represents streaming, system prompts, tools,
+structured output, image input, and reasoning. Adding UI for future capabilities
+does not require provider-specific branches in the generic option renderer.
 
-- **Set-up Prompt Selection**: Unlock more specific responses, results, and knowledge by selecting from a variety of preset set-up prompts. Additionally, craft your own custom set-up prompt for personalized interactions.
+## Provider configuration
 
-- **Knowledge Cut-off**: Ask the selected model to answer from the perspective of a chosen date in the past.
+Credentials and endpoints are read only from environment variables. They are not
+entered or displayed in the Streamlit interface.
 
-- **On-demand Switching**: Seamlessly switch between GPT-5.6 model tiers and set-up prompts to balance capability, latency, and cost.
+| Provider | Required | Optional |
+| --- | --- | --- |
+| OpenAI | `OPENAI_API_KEY` | `OPENAI_BASE_URL` |
+| Anthropic | `ANTHROPIC_API_KEY` | `ANTHROPIC_BASE_URL` |
+| Ollama | A reachable Ollama service | `OLLAMA_HOST`, `OLLAMA_API_KEY` |
 
-## Getting Started
-
-HackGPT is built using Python 3.9 and Streamlit. It can be easily deployed in a containerized environment using the included Docker Compose set-up.
-
-To get started, follow the steps below:
-
-### Docker Compose (recommended)
-
-The easiest way to run HackGPT is to use Docker Compose. To do so, run:
+Copy the example file and fill in only the providers you use:
 
 ```bash
-docker compose -f docker/docker-compose.dev.yml up # -d to run in background
+cp .env.example .env
 ```
 
-To stop the container, press `Ctrl+C` in the terminal window, or run:
+Docker Compose reads the root `.env` file automatically. For a local Python run,
+export the variables into the process environment before starting Streamlit. If
+`OLLAMA_HOST` is omitted, the Ollama client uses its local default. When Streamlit
+runs in a container and Ollama runs on the host, set `OLLAMA_HOST` to an address
+reachable from that container.
+
+Provider availability is account- and deployment-specific. A configured provider
+can still report a clear discovery error when credentials are invalid, its endpoint
+is unreachable, or it has no compatible chat models.
+
+## Getting started
+
+HackGPT requires Python 3.12 or newer.
+
+### Docker Compose
+
+```bash
+docker compose -f docker/docker-compose.dev.yml up
+```
+
+Stop or remove the development service with:
 
 ```bash
 docker compose -f docker/docker-compose.dev.yml stop
-```
-
-... in case you used the `-d` flag to run the container in the background.
-
-To remove the container, run:
-
-```bash
 docker compose -f docker/docker-compose.dev.yml down
 ```
 
-### Docker (manually)
-
-If you don't want to use Docker Compose, you can also run the container manually. To do so, run:
+### Local development
 
 ```bash
-docker run --rm -p 8501:8501 -v "$(pwd)/src:/app" -w /app python:3.9-slim bash -c "pip install -r requirements.txt && streamlit run app.py"
+python -m pip install -r requirements-dev.txt
+streamlit run src/app.py
 ```
 
-### VS Code Dev Container
+The included VS Code Dev Container installs the same development requirements and
+forwards Streamlit on port 8501.
 
-With the VS Code Dev Containers extension installed, open the Command Palette and select **Dev Containers: Reopen in Container**. The Python dependencies are installed automatically and port 8501 is forwarded for Streamlit.
+## Quality checks
 
-### Local Python environment
-
-If you don't want to use Docker, you can also run HackGPT in a local Python environment. To do so, run:
+Run the complete local verification suite from the repository root:
 
 ```bash
-cd ./src
-pip install -r requirements.txt
-streamlit run app.py
+ruff format --check src tests
+ruff check src tests
+mypy src tests
+pytest
 ```
 
-## Source layout
+## Architecture
 
-- `src/app.py` — minimal Streamlit entry point.
-- `src/hackgpt/config.py` — application constants and model metadata.
-- `src/hackgpt/openai_service.py` — streamed OpenAI Responses API client.
-- `src/hackgpt/prompts.py` — bundled setup-prompt loading and composition.
-- `src/hackgpt/state.py` — Streamlit session-state management.
-- `src/hackgpt/ui/` — sidebar and chat rendering components.
-- `src/hackgpt/data/` — packaged setup-prompt data.
-
-## Feedback
-
-We hope this initial release of HackGPT serves as a valuable tool for developers, encouraging exploration and experimentation with GPT-based models. Your feedback on HackGPT is highly appreciated as it will help us shape future versions of the project.
-
-We're thrilled to have you join us in this journey of unleashing new possibilities and customizability for developers with HackGPT!
+- `src/app.py` — Streamlit entry point and provider-registry lifetime.
+- `src/hackgpt/providers/types.py` — provider protocol, capabilities, option schemas,
+  normalised messages, validation, and user-facing provider errors.
+- `src/hackgpt/providers/` — isolated OpenAI, Anthropic, and Ollama adapters plus the
+  provider registry.
+- `src/hackgpt/ui/options.py` — generic schema-to-Streamlit widget rendering.
+- `src/hackgpt/ui/sidebar.py` — provider/model discovery and application controls.
+- `src/hackgpt/ui/chat.py` — provider-neutral history and streamed chat rendering.
+- `src/hackgpt/prompts.py` — bundled setup-prompt loading and historical context.
+- `src/hackgpt/state.py` — session-state initialisation and history normalisation.
+- `tests/` — schema, selection, adapter translation, state, and Streamlit smoke tests.
 
 ## License
 
-This project is licensed under the terms of the ISC license. See [LICENSE](LICENSE) for more details.
+This project is licensed under the terms of the ISC license. See [LICENSE](LICENSE)
+for details.
