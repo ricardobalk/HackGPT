@@ -23,8 +23,24 @@ MODEL_DESCRIPTIONS: Final = {
     "gpt-5.6-luna": (
         "Cost-efficient model for simpler and high-volume workloads."
     ),
+    "gpt-4.1": (
+        "High-intelligence, low-latency model with strong instruction following."
+    ),
+    "gpt-4.1-mini": (
+        "Smaller, faster GPT-4.1 model for cost-sensitive workloads."
+    ),
+    "gpt-4o": (
+        "Legacy multimodal GPT-4o model. Deprecated; prefer a newer model."
+    ),
+    "gpt-4o-mini": (
+        "Fast, affordable multimodal model for focused tasks."
+    ),
 }
 
+MODELS_WITH_ADVANCED_REASONING: Final = frozenset(
+    {"gpt-5.6-terra", "gpt-5.6-sol", "gpt-5.6-luna"}
+)
+MODELS_WITH_VERBOSITY: Final = MODELS_WITH_ADVANCED_REASONING
 REASONING_EFFORTS: Final = ("none", "low", "medium", "high", "xhigh", "max")
 REASONING_MODES: Final = ("standard", "pro")
 VERBOSITY_LEVELS: Final = ("low", "medium", "high")

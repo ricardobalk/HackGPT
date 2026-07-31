@@ -7,6 +7,8 @@ from hackgpt.config import (
     MAX_CUTOFF_DATE,
     MIN_CUTOFF_DATE,
     MODEL_DESCRIPTIONS,
+    MODELS_WITH_ADVANCED_REASONING,
+    MODELS_WITH_VERBOSITY,
     REASONING_EFFORTS,
     REASONING_MODES,
     VERBOSITY_LEVELS,
@@ -110,29 +112,37 @@ def render_sidebar(prompts: dict[str, PromptCategory]) -> PromptSelection:
                 step=16,
                 help="The maximum number of tokens to generate in the response.",
             )
-            st.session_state["reasoning_effort"] = st.select_slider(
-                "Reasoning effort",
-                options=REASONING_EFFORTS,
-                value="medium",
-                help=(
-                    "Higher effort can improve difficult answers but increases "
-                    "latency and token use."
-                ),
-            )
-            st.session_state["verbosity"] = st.select_slider(
-                "Response detail",
-                options=VERBOSITY_LEVELS,
-                value="medium",
-                help="Controls how detailed the model's final response is.",
-            )
-            st.session_state["reasoning_mode"] = st.selectbox(
-                "Reasoning mode",
-                options=REASONING_MODES,
-                help=(
-                    "Pro mode can improve difficult answers, but increases latency "
-                    "and token usage."
-                ),
-            )
+            if model in MODELS_WITH_ADVANCED_REASONING:
+                st.session_state["reasoning_effort"] = st.select_slider(
+                    "Reasoning effort",
+                    options=REASONING_EFFORTS,
+                    value="medium",
+                    help=(
+                        "Higher effort can improve difficult answers but increases "
+                        "latency and token use."
+                    ),
+                )
+                st.session_state["reasoning_mode"] = st.selectbox(
+                    "Reasoning mode",
+                    options=REASONING_MODES,
+                    help=(
+                        "Pro mode can improve difficult answers, but increases "
+                        "latency and token usage."
+                    ),
+                )
+            else:
+                st.session_state["reasoning_effort"] = None
+                st.session_state["reasoning_mode"] = None
+
+            if model in MODELS_WITH_VERBOSITY:
+                st.session_state["verbosity"] = st.select_slider(
+                    "Response detail",
+                    options=VERBOSITY_LEVELS,
+                    value="medium",
+                    help="Controls how detailed the model's final response is.",
+                )
+            else:
+                st.session_state["verbosity"] = None
 
         with st.expander("API configuration"):
             st.text_input(

@@ -25,27 +25,30 @@ class OpenAIChatService:
         instructions: str,
         messages: Sequence[ChatMessage],
         max_output_tokens: int,
-        reasoning_effort: str,
-        reasoning_mode: str,
-        verbosity: str,
+        reasoning_effort: str | None,
+        reasoning_mode: str | None,
+        verbosity: str | None,
         safety_identifier: str,
     ) -> Iterator[str]:
         """Yield text deltas for a single assistant response."""
-        reasoning = {"effort": reasoning_effort}
-        if reasoning_mode == "pro":
-            reasoning["mode"] = "pro"
+        request_options: dict[str, object] = {
+            "model": model,
+            "instructions": instructions,
+            "input": list(messages),
+            "max_output_tokens": max_output_tokens,
+            "safety_identifier": safety_identifier,
+            "stream": True,
+        }
+        if reasoning_effort is not None:
+            reasoning = {"effort": reasoning_effort}
+            if reasoning_mode == "pro":
+                reasoning["mode"] = "pro"
+            request_options["reasoning"] = reasoning
+        if verbosity is not None:
+            request_options["text"] = {"verbosity": verbosity}
 
         try:
-            stream = self._client.responses.create(
-                model=model,
-                instructions=instructions,
-                input=list(messages),
-                max_output_tokens=max_output_tokens,
-                reasoning=reasoning,
-                text={"verbosity": verbosity},
-                safety_identifier=safety_identifier,
-                stream=True,
-            )
+            stream = self._client.responses.create(**request_options)
             for event in stream:
                 if event.type == "response.output_text.delta":
                     yield event.delta
