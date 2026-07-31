@@ -5,7 +5,7 @@ from uuid import uuid4
 import streamlit as st
 
 from hackgpt.config import DEFAULT_CUTOFF_DATE
-from hackgpt.models import ChatMessage
+from hackgpt.providers.types import ChatMessage
 
 
 def initialize_session_state() -> None:
@@ -16,6 +16,7 @@ def initialize_session_state() -> None:
         "use_cutoff_date": False,
         "date_cutoff": DEFAULT_CUTOFF_DATE,
         "date_cutoff_today": DEFAULT_CUTOFF_DATE,
+        "provider_model_cache": {},
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -23,8 +24,21 @@ def initialize_session_state() -> None:
 
 
 def get_chat_messages() -> list[ChatMessage]:
-    """Return the current conversation history."""
-    return st.session_state["chat_messages"]
+    """Return provider-neutral history, migrating legacy dictionary messages."""
+    raw_messages: object = st.session_state["chat_messages"]
+    if not isinstance(raw_messages, list):
+        raw_messages = []
+    messages: list[ChatMessage] = []
+    for raw_message in raw_messages:
+        if isinstance(raw_message, ChatMessage):
+            messages.append(raw_message)
+        elif isinstance(raw_message, dict):
+            role = raw_message.get("role")
+            content = raw_message.get("content")
+            if role in {"user", "assistant"} and isinstance(content, str) and content:
+                messages.append(ChatMessage(role=role, content=content))
+    st.session_state["chat_messages"] = messages
+    return messages
 
 
 def clear_chat_history() -> None:

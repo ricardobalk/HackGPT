@@ -1,14 +1,10 @@
 """Shared data structures used by the application."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Literal, TypedDict
+from typing import TypedDict
 
-
-class ChatMessage(TypedDict):
-    """A user or assistant message accepted by the Responses API."""
-
-    role: Literal["user", "assistant"]
-    content: str
+from hackgpt.providers.types import ChatProvider, ModelInfo, OptionValue
 
 
 class PromptOption(TypedDict):
@@ -32,3 +28,20 @@ class PromptSelection:
     category: str
     label: str
     value: str
+
+
+@dataclass(frozen=True)
+class ChatConfiguration:
+    """Validated provider, model, and generation options for one chat rerun."""
+
+    provider: ChatProvider
+    model: ModelInfo
+    options: Mapping[str, OptionValue]
+
+
+@dataclass(frozen=True)
+class SidebarSelection:
+    """Complete result of rendering the application sidebar."""
+
+    prompt: PromptSelection
+    chat: ChatConfiguration | None
