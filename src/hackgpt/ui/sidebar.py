@@ -37,7 +37,11 @@ def _render_prompt_picker(
     if category_key == "custom":
         value = st.text_input("Custom setup prompt", value=CUSTOM_PROMPT)
 
-    return PromptSelection(label=option["label"], value=value)
+    return PromptSelection(
+        category=prompts[category_key]["label"],
+        label=option["label"],
+        value=value,
+    )
 
 
 def _render_historical_context(prompt: PromptSelection) -> PromptSelection:
@@ -64,6 +68,7 @@ def _render_historical_context(prompt: PromptSelection) -> PromptSelection:
     st.session_state["date_cutoff"] = cutoff
     st.session_state["date_cutoff_today"] = today
     return PromptSelection(
+        category=prompt.category,
         label=prompt.label,
         value=add_historical_context(prompt.value, cutoff, today),
     )

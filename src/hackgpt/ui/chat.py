@@ -2,10 +2,17 @@
 
 import streamlit as st
 
-from hackgpt.config import APP_FOOTER
+from hackgpt.config import APP_FOOTER, APP_NAME
 from hackgpt.models import ChatMessage, PromptSelection
 from hackgpt.openai_service import ChatServiceError, OpenAIChatService
 from hackgpt.state import get_chat_messages
+
+
+def _render_setup_prompt(prompt: str) -> None:
+    """Show the effective setup prompt above the conversation."""
+    with st.chat_message("system"):
+        st.caption("Setup prompt")
+        st.markdown(prompt)
 
 
 def _render_history(messages: list[ChatMessage]) -> None:
@@ -47,10 +54,11 @@ def render_chat(
 ) -> None:
     """Render chat history, accept a prompt, and stream its response."""
     with st.container():
-        st.header(prompt_selection.label)
+        st.header(f"{APP_NAME}: {prompt_selection.category}")
         st.write(APP_FOOTER)
 
         messages = get_chat_messages()
+        _render_setup_prompt(st.session_state["setup_prompt"])
         _render_history(messages)
 
         if prompt := st.chat_input("What is up?"):

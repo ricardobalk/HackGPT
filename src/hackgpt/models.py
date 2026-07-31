@@ -29,5 +29,6 @@ class PromptCategory(TypedDict):
 class PromptSelection:
     """The setup prompt currently selected in the sidebar."""
 
+    category: str
     label: str
     value: str
