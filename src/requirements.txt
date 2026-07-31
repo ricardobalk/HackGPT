@@ -1,2 +1,4 @@
+anthropic==0.104.1
+ollama==0.6.2
 openai==2.46.0
-streamlit
+streamlit==1.60.0
