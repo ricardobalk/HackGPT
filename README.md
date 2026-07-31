@@ -76,8 +76,18 @@ python -m pip install -r requirements-dev.txt
 streamlit run src/app.py
 ```
 
-The included VS Code Dev Container installs the same development requirements and
-forwards Streamlit on port 8501.
+### VS Code Dev Container
+
+Choose **Dev Containers: Reopen in Container** from the Command Palette. The
+container installs the development requirements, forwards port 8501, and runs the
+`HackGPT: Start Streamlit` workspace task when the folder opens. Its dedicated
+integrated terminal is revealed automatically so startup messages, request logs,
+and errors remain visible. The forwarded app also opens in a VS Code preview.
+
+Use `Ctrl+C` in that terminal to stop Streamlit. To start it again, run
+**Tasks: Run Task** and select `HackGPT: Start Streamlit`. After changing
+`.devcontainer/devcontainer.json`, use **Dev Containers: Rebuild and Reopen in
+Container** so the updated container settings take effect.
 
 ## Quality checks
 
