@@ -26,16 +26,23 @@ class OpenAIChatService:
         messages: Sequence[ChatMessage],
         max_output_tokens: int,
         reasoning_effort: str,
+        reasoning_mode: str,
+        verbosity: str,
         safety_identifier: str,
     ) -> Iterator[str]:
         """Yield text deltas for a single assistant response."""
+        reasoning = {"effort": reasoning_effort}
+        if reasoning_mode == "pro":
+            reasoning["mode"] = "pro"
+
         try:
             stream = self._client.responses.create(
                 model=model,
                 instructions=instructions,
                 input=list(messages),
                 max_output_tokens=max_output_tokens,
-                reasoning={"effort": reasoning_effort},
+                reasoning=reasoning,
+                text={"verbosity": verbosity},
                 safety_identifier=safety_identifier,
                 stream=True,
             )

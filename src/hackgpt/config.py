@@ -26,6 +26,8 @@ MODEL_DESCRIPTIONS: Final = {
 }
 
 REASONING_EFFORTS: Final = ("none", "low", "medium", "high", "xhigh", "max")
+REASONING_MODES: Final = ("standard", "pro")
+VERBOSITY_LEVELS: Final = ("low", "medium", "high")
 DEFAULT_CUTOFF_DATE: Final = date(2021, 9, 1)
 
 APP_FOOTER: Final = (

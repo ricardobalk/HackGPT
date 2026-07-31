@@ -8,6 +8,8 @@ from hackgpt.config import (
     DEFAULT_CUTOFF_DATE,
     MODEL_DESCRIPTIONS,
     REASONING_EFFORTS,
+    REASONING_MODES,
+    VERBOSITY_LEVELS,
 )
 from hackgpt.models import PromptCategory, PromptSelection
 from hackgpt.prompts import CUSTOM_PROMPT, add_historical_context
@@ -106,6 +108,20 @@ def render_sidebar(prompts: dict[str, PromptCategory]) -> PromptSelection:
                 help=(
                     "Higher effort can improve difficult answers but increases "
                     "latency and token use."
+                ),
+            )
+            st.session_state["verbosity"] = st.select_slider(
+                "Response detail",
+                options=VERBOSITY_LEVELS,
+                value="medium",
+                help="Controls how detailed the model's final response is.",
+            )
+            st.session_state["reasoning_mode"] = st.selectbox(
+                "Reasoning mode",
+                options=REASONING_MODES,
+                help=(
+                    "Pro mode can improve difficult answers, but increases latency "
+                    "and token usage."
                 ),
             )
 

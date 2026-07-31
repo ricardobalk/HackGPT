@@ -29,6 +29,8 @@ def _stream_assistant_response(
             messages=messages,
             max_output_tokens=st.session_state["max_tokens"],
             reasoning_effort=st.session_state["reasoning_effort"],
+            reasoning_mode=st.session_state["reasoning_mode"],
+            verbosity=st.session_state["verbosity"],
             safety_identifier=st.session_state["session_identifier"],
         ):
             full_response += delta
