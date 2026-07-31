@@ -1,1 +1,4 @@
-app/.streamlit/secrets.toml
+src/.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.venv/

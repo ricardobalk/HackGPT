@@ -6,7 +6,7 @@ services:
     ports:
       - '8501:8501'
     volumes:
-      - ./app:/app
+      - ../src:/app
     working_dir: /app
     command: bash -c "pip install -r requirements.txt && streamlit run app.py"
     restart: unless-stopped
