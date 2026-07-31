@@ -12,6 +12,7 @@ select = ["B", "E", "F", "I", "UP"]
 
 [tool.mypy]
 python_version = "3.12"
+mypy_path = "src"
 check_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_defs = true
