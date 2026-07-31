@@ -10,7 +10,7 @@
       "onAutoForward": "openPreview"
     }
   },
-  "postCreateCommand": "python -m pip install -r src/requirements.txt",
+  "postCreateCommand": "python -m pip install -r requirements-dev.txt",
   "customizations": {
     "vscode": {
       "extensions": [
