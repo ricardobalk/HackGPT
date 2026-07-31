@@ -13,7 +13,7 @@ class PageConfig(TypedDict):
 
 
 APP_NAME: Final = "HackGPT"
-APP_VERSION: Final = "1.0.0-alpha.2"
+APP_VERSION: Final = "1.0.0-alpha.3"
 RELEASE_DATE: Final = date(2026, 7, 31)
 
 PAGE_CONFIG: Final[PageConfig] = {
