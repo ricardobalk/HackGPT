@@ -2,19 +2,19 @@
 
 Welcome to HackGPT, a powerful and customizable AI chatbot interface designed specifically for developers. With a ChatGPT-like experience, HackGPT brings a host of key features to enhance your hacking capabilities and empower your development process.
 
-[![HackGPT Demo](images/demo.gif)](./images/demo.gif)
+[![HackGPT Demo](static/images/demo.gif)](./static/images/demo.gif)
 
 ## Current Features
 
-- **ChatGPT-like Interface**: Immerse yourself in a chat-like environment with streaming output and a typing effect. Enable or disable the typing effect based on your preference for quick responses.
+- **ChatGPT-like Interface**: Immerse yourself in a chat-like environment with responses streamed as they are generated.
 
-- **Fine-tuning**: Tailor your HackGPT experience with the sidebar's range of options. Choose from different models like GPT-3, GPT-4, or specific models such as 'gpt-3.5-turbo'. Fine-tune model response parameters and configure API settings.
+- **Model Selection**: Choose from GPT-5.6, GPT-4.1, and GPT-4o models. Compatible models also expose reasoning effort, reasoning mode, and response detail controls.
 
 - **Set-up Prompt Selection**: Unlock more specific responses, results, and knowledge by selecting from a variety of preset set-up prompts. Additionally, craft your own custom set-up prompt for personalized interactions.
 
-- **Knowledge Cut-off**: Utilize GPT-4's time-travel capabilities by setting a "knowledge cut-off" date. Limit the AI's knowledge to a specific time in the past and explore historical insights. Gain a greater understanding of historical events, cultural nuances, and prevailing trends.
+- **Knowledge Cut-off**: Ask the selected model to answer from the perspective of a chosen date in the past.
 
-- **On-demand Switching**: Seamlessly switch between models (GPT-3, GPT-4, etc.) and set-up prompts to unlock diverse and more dynamic AI-generated responses. Benefit from the advanced contextual understanding and improved transfer learning capabilities of different models.
+- **On-demand Switching**: Seamlessly switch between GPT-5.6 model tiers and set-up prompts to balance capability, latency, and cost.
 
 ## Getting Started
 
@@ -27,13 +27,13 @@ To get started, follow the steps below:
 The easiest way to run HackGPT is to use Docker Compose. To do so, run:
 
 ```bash
-docker-compose up # -d to run in background
+docker compose -f docker/docker-compose.dev.yml up # -d to run in background
 ```
 
 To stop the container, press `Ctrl+C` in the terminal window, or run:
 
 ```bash
-docker-compose stop
+docker compose -f docker/docker-compose.dev.yml stop
 ```
 
 ... in case you used the `-d` flag to run the container in the background.
@@ -41,7 +41,7 @@ docker-compose stop
 To remove the container, run:
 
 ```bash
-docker-compose down
+docker compose -f docker/docker-compose.dev.yml down
 ```
 
 ### Docker (manually)
@@ -49,18 +49,32 @@ docker-compose down
 If you don't want to use Docker Compose, you can also run the container manually. To do so, run:
 
 ```bash
-docker run --rm -p 8501:8501 -v $(pwd)/app:/app -w /app python:3.9-slim bash -c "pip install -r requirements.txt && streamlit run app.py"
+docker run --rm -p 8501:8501 -v "$(pwd)/src:/app" -w /app python:3.9-slim bash -c "pip install -r requirements.txt && streamlit run app.py"
 ```
+
+### VS Code Dev Container
+
+With the VS Code Dev Containers extension installed, open the Command Palette and select **Dev Containers: Reopen in Container**. The Python dependencies are installed automatically and port 8501 is forwarded for Streamlit.
 
 ### Local Python environment
 
 If you don't want to use Docker, you can also run HackGPT in a local Python environment. To do so, run:
 
 ```bash
-cd ./app
+cd ./src
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+## Source layout
+
+- `src/app.py` — minimal Streamlit entry point.
+- `src/hackgpt/config.py` — application constants and model metadata.
+- `src/hackgpt/openai_service.py` — streamed OpenAI Responses API client.
+- `src/hackgpt/prompts.py` — bundled setup-prompt loading and composition.
+- `src/hackgpt/state.py` — Streamlit session-state management.
+- `src/hackgpt/ui/` — sidebar and chat rendering components.
+- `src/hackgpt/data/` — packaged setup-prompt data.
 
 ## Feedback
 
