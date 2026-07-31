@@ -13,6 +13,9 @@
   "postCreateCommand": "python -m pip install -r requirements-dev.txt",
   "customizations": {
     "vscode": {
+      "settings": {
+        "task.allowAutomaticTasks": "on"
+      },
       "extensions": [
         "ms-python.python"
       ]
