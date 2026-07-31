@@ -3,7 +3,6 @@
 import streamlit as st
 
 from hackgpt.config import (
-    DEFAULT_CUTOFF_DATE,
     MAX_CUTOFF_DATE,
     MIN_CUTOFF_DATE,
     MODEL_DESCRIPTIONS,

@@ -5,13 +5,13 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["B", "E", "F", "I", "UP"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 check_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_defs = true
