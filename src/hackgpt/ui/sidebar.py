@@ -1,11 +1,11 @@
 """Render and process the preferences sidebar."""
 
-from datetime import date
-
 import streamlit as st
 
 from hackgpt.config import (
     DEFAULT_CUTOFF_DATE,
+    MAX_CUTOFF_DATE,
+    MIN_CUTOFF_DATE,
     MODEL_DESCRIPTIONS,
     REASONING_EFFORTS,
     REASONING_MODES,
@@ -58,12 +58,16 @@ def _render_historical_context(prompt: PromptSelection) -> PromptSelection:
     cutoff = st.date_input(
         "Cutoff date",
         value=st.session_state["date_cutoff"],
-        max_value=DEFAULT_CUTOFF_DATE,
+        min_value=MIN_CUTOFF_DATE,
+        max_value=MAX_CUTOFF_DATE,
     )
+    today_value = min(st.session_state["date_cutoff_today"], cutoff)
     today = st.date_input(
         "Today's date",
-        value=st.session_state["date_cutoff_today"],
-        max_value=date.today(),
+        value=today_value,
+        min_value=MIN_CUTOFF_DATE,
+        max_value=cutoff,
+        help="Must be on or before the selected knowledge cutoff.",
     )
     st.session_state["date_cutoff"] = cutoff
     st.session_state["date_cutoff_today"] = today

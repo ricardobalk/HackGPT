@@ -1,6 +1,5 @@
 """Helpers for initializing and mutating Streamlit session state."""
 
-from datetime import date
 from uuid import uuid4
 
 import streamlit as st
@@ -16,7 +15,7 @@ def initialize_session_state() -> None:
         "session_identifier": str(uuid4()),
         "use_cutoff_date": False,
         "date_cutoff": DEFAULT_CUTOFF_DATE,
-        "date_cutoff_today": date.today(),
+        "date_cutoff_today": DEFAULT_CUTOFF_DATE,
     }
     for key, value in defaults.items():
         if key not in st.session_state:

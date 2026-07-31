@@ -28,7 +28,9 @@ MODEL_DESCRIPTIONS: Final = {
 REASONING_EFFORTS: Final = ("none", "low", "medium", "high", "xhigh", "max")
 REASONING_MODES: Final = ("standard", "pro")
 VERBOSITY_LEVELS: Final = ("low", "medium", "high")
-DEFAULT_CUTOFF_DATE: Final = date(2021, 9, 1)
+MIN_CUTOFF_DATE: Final = date(1950, 1, 1)
+DEFAULT_CUTOFF_DATE: Final = date(date.today().year, 1, 1)
+MAX_CUTOFF_DATE: Final = date.today()
 
 APP_FOOTER: Final = (
     f"{APP_NAME} {APP_VERSION}, released on {RELEASE_DATE.strftime('%B %d, %Y')}. "
