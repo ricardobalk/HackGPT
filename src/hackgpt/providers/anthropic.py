@@ -269,9 +269,10 @@ class AnthropicProvider:
                 "type": "enabled",
                 "budget_tokens": budget,
             }
-        request_options.update(
-            {key: value for key, value in options.items() if value != 0}
-        )
+        top_k = options.pop("top_k", None)
+        if top_k not in {None, 0}:
+            request_options["top_k"] = top_k
+        request_options.update(options)
 
         try:
             with self._get_client().messages.stream(**request_options) as stream:

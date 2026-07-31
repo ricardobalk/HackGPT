@@ -102,3 +102,26 @@ def test_anthropic_translates_adaptive_thinking_request() -> None:
         "thinking": {"type": "adaptive"},
         "output_config": {"effort": "high"},
     }
+
+
+def test_anthropic_preserves_zero_temperature() -> None:
+    client = FakeClient()
+    provider = AnthropicProvider(client=client)
+    model = provider.discover_models()[0]
+    request = ChatRequest(
+        model=model,
+        system_prompt="Be precise.",
+        messages=(ChatMessage("user", "Hello"),),
+        options={
+            "max_tokens": 1000,
+            "thinking_mode": "disabled",
+            "temperature": 0.0,
+            "top_p": 1.0,
+            "top_k": 0,
+        },
+        request_id="unused-by-anthropic",
+    )
+
+    assert "".join(provider.stream_chat(request)) == "Hello"
+    assert client.messages.options["temperature"] == 0.0
+    assert "top_k" not in client.messages.options
