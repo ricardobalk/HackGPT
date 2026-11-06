@@ -134,45 +134,6 @@ def _option_schema(model: Any) -> tuple[OptionSchema, ...]:
                 )
             )
 
-    sampling_condition = (
-        OptionCondition("thinking_mode", "disabled") if thinking_choices else None
-    )
-    options.extend(
-        [
-            OptionSchema(
-                key="temperature",
-                kind=OptionKind.FLOAT,
-                label="Temperature",
-                default=1.0,
-                description="Controls response randomness.",
-                minimum=0.0,
-                maximum=1.0,
-                step=0.1,
-                visible_when=sampling_condition,
-            ),
-            OptionSchema(
-                key="top_p",
-                kind=OptionKind.FLOAT,
-                label="Top P",
-                default=1.0,
-                minimum=0.0,
-                maximum=1.0,
-                step=0.05,
-                visible_when=sampling_condition,
-            ),
-            OptionSchema(
-                key="top_k",
-                kind=OptionKind.INTEGER,
-                label="Top K",
-                default=0,
-                description="Zero uses Claude's model default.",
-                minimum=0,
-                maximum=500,
-                step=1,
-                visible_when=sampling_condition,
-            ),
-        ]
-    )
     return tuple(options)
 
 
@@ -269,9 +230,6 @@ class AnthropicProvider:
                 "type": "enabled",
                 "budget_tokens": budget,
             }
-        top_k = options.pop("top_k", None)
-        if top_k not in {None, 0}:
-            request_options["top_k"] = top_k
         request_options.update(options)
 
         try:
