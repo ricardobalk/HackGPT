@@ -1,0 +1,19 @@
+version: '3.9'
+name: hackgpt
+services:
+  streamlit:
+    image: python:3.12-slim
+    ports:
+      - '8501:8501'
+    volumes:
+      - ../src:/app
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
+      OLLAMA_HOST: ${OLLAMA_HOST:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+    working_dir: /app
+    command: bash -c "pip install -r requirements.txt && streamlit run app.py"
+    restart: unless-stopped
