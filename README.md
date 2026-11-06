@@ -32,7 +32,7 @@ entered or displayed in the Streamlit interface.
 
 | Provider | Required | Optional |
 | --- | --- | --- |
-| OpenAI | `OPENAI_API_KEY` | `OPENAI_BASE_URL` |
+| OpenAI | `OPENAI_API_KEY` | `OPENAI_BASE_URL`, `OPENAI_MODEL_ALIASES` |
 | Anthropic | `ANTHROPIC_API_KEY` | `ANTHROPIC_BASE_URL` |
 | Ollama | A reachable Ollama service | `OLLAMA_HOST`, `OLLAMA_API_KEY` |
 
@@ -51,6 +51,55 @@ reachable from that container.
 Provider availability is account- and deployment-specific. A configured provider
 can still report a clear discovery error when credentials are invalid, its endpoint
 is unreachable, or it has no compatible chat models.
+
+### OpenAI models and compatible gateways
+
+The OpenAI adapter uses `/models` for discovery and streams `/responses`.
+Its GPT-6 profiles were checked against official OpenAI documentation on
+2026-11-06:
+
+| Model | Reasoning effort choices | Maximum output tokens |
+| --- | --- | --- |
+| `gpt-6-astra`, `gpt-6.1-sol` | `low`, `medium`, `high`, `xhigh`, `max` | 128,000 |
+| `gpt-6-sol`, `gpt-6-luna`, `gpt-6.1-terra` | `none`, `low`, `medium`, `high`, `xhigh`, `max` | 128,000 |
+
+All profiles default to `medium` effort and expose `standard`/`pro` reasoning mode
+and `low`/`medium`/`high` verbosity. Sampling controls (`temperature`, `top_p`)
+appear and are sent only when the model supports and selects `none`. Switching
+back to reasoning omits stale sampling values. The existing GPT-4.1 sampling and
+GPT-5.6 reasoning controls remain available.
+
+The adapter translates `max_tokens` to `max_output_tokens`, effort and pro mode
+to `reasoning`, and verbosity to `text.verbosity`. The output budget includes
+reasoning tokens; the application default remains 2,048, so increase it for
+reasoning-heavy answers. See [Using GPT-6](https://developers.openai.com/api/docs/guides/latest-model),
+[model specifications](https://developers.openai.com/api/docs/models), and
+[reasoning token budgets](https://developers.openai.com/api/docs/guides/reasoning).
+
+Known profiles also cover date-suffixed snapshots and IDs prefixed with `openai/`.
+For arbitrary LiteLLM aliases or Azure deployment names, configure an explicit,
+single-level mapping to the underlying OpenAI model:
+
+```bash
+export OPENAI_BASE_URL=https://your-gateway.example/v1
+export OPENAI_MODEL_ALIASES='{"team-reasoner":"gpt-6.1-sol","azure/team-chat":"gpt-6-luna"}'
+```
+
+Mappings select the local capability schema; requests keep the exact discovered
+deployment ID. A mapping does not add a model absent from `/models`. Names outside
+the OpenAI chat-model naming patterns are excluded unless mapped. Unverified
+GPT-6 variants expose only the output budget
+with a conservative 32,768 ceiling and use server defaults for other controls.
+Configure aliases only for deployments with the stated model's capabilities.
+
+The gateway must support streaming Responses requests and the selected controls;
+Chat Completions compatibility alone is insufficient. LiteLLM may translate
+Responses to Chat Completions for some backends, approximating or dropping
+Responses-only fields. Check the deployment's endpoint configuration, including
+native Responses passthrough where appropriate. See
+[LiteLLM Responses passthrough](https://docs.litellm.ai/docs/response_api_native_passthrough).
+Gateway regression tests use the real OpenAI SDK with mocked HTTP and SSE; they
+do not certify a particular running gateway or account.
 
 ## Getting started
 
