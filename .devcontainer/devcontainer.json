@@ -1,0 +1,24 @@
+// Based on the official Microsoft-maintained Python Dev Container template:
+// https://github.com/devcontainers/templates/tree/main/src/python
+{
+  "name": "HackGPT Python",
+  "image": "mcr.microsoft.com/devcontainers/python:3-3.14-trixie",
+  "forwardPorts": [8501],
+  "portsAttributes": {
+    "8501": {
+      "label": "HackGPT (Streamlit)",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "postCreateCommand": "python -m pip install -r requirements-dev.txt",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "task.allowAutomaticTasks": "on"
+      },
+      "extensions": [
+        "ms-python.python"
+      ]
+    }
+  }
+}

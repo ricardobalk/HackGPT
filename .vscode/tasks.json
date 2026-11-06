@@ -1,0 +1,36 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "HackGPT: Start Streamlit",
+      "type": "process",
+      "command": "python",
+      "args": [
+        "-m",
+        "streamlit",
+        "run",
+        "src/app.py",
+        "--server.address=0.0.0.0",
+        "--server.port=8501"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "revealProblems": "never",
+        "focus": false,
+        "panel": "dedicated",
+        "clear": true,
+        "showReuseMessage": false
+      },
+      "runOptions": {
+        "runOn": "folderOpen",
+        "instanceLimit": 1,
+        "instancePolicy": "silent"
+      }
+    }
+  ]
+}

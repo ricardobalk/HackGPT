@@ -1,11 +1,11 @@
 {
   "default": {
-    "label": "HackGPT",
-    "description": "You are an AI assistant made by OpenAI designed to assist with a multitude of tasks.",
+    "label": "Default Style",
+    "description": "You are an AI assistant designed to assist with a multitude of tasks.",
     "options": {
       "default": {
         "label": "Default",
-        "value": "You are an AI assistant made by OpenAI designed to assist with a multitude of tasks."
+        "value": "You are an AI assistant designed to assist with a multitude of tasks."
       }
     }
   },
