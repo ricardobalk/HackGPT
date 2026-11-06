@@ -4,7 +4,7 @@ import json
 from types import SimpleNamespace
 from typing import Any
 
-import httpx
+import httpx2
 import pytest
 from openai import OpenAI
 
@@ -235,10 +235,10 @@ def test_sdk_gateway_discovery_and_streaming_payload(
         monkeypatch.setenv("OPENAI_MODEL_ALIASES", json.dumps({model_id: canonical}))
     payloads: list[dict[str, Any]] = []
 
-    def handle(request: httpx.Request) -> httpx.Response:
+    def handle(request: httpx2.Request) -> httpx2.Response:
         if request.method == "GET":
             assert str(request.url) == f"{base_url}/models"
-            return httpx.Response(
+            return httpx2.Response(
                 200,
                 json={
                     "object": "list",
@@ -261,7 +261,7 @@ def test_sdk_gateway_discovery_and_streaming_payload(
         assert request.method == "POST"
         assert str(request.url) == f"{base_url}/responses"
         payloads.append(json.loads(request.content))
-        return httpx.Response(
+        return httpx2.Response(
             200,
             headers={"content-type": "text/event-stream"},
             content='data: {"type":"response.output_text.delta","delta":"Hello"}\n\n'
@@ -270,7 +270,7 @@ def test_sdk_gateway_discovery_and_streaming_payload(
 
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     monkeypatch.setenv("OPENAI_BASE_URL", base_url)
-    http_client = httpx.Client(transport=httpx.MockTransport(handle))
+    http_client = httpx2.Client(transport=httpx2.MockTransport(handle))
 
     def make_client(**kwargs: Any) -> OpenAI:
         return OpenAI(http_client=http_client, **kwargs)
