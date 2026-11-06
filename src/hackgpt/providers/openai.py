@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import os
+import re
 from collections.abc import Iterator, Sequence
 from typing import Any, Final
 
@@ -15,6 +17,7 @@ from hackgpt.providers.types import (
     ModelInfo,
     ModelUnavailableError,
     OptionChoice,
+    OptionCondition,
     OptionKind,
     OptionSchema,
     ProviderConfigurationError,
@@ -36,6 +39,20 @@ _NON_CHAT_MARKERS: Final = (
     "tts",
 )
 
+# Verified Responses API profiles; unknown variants must not inherit sampling.
+_GPT6_SUPPORTS_NONE: Final = {
+    "gpt-6-astra": False,
+    "gpt-6-sol": True,
+    "gpt-6-luna": True,
+    "gpt-6.1-sol": False,
+    "gpt-6.1-terra": True,
+}
+
+
+def _gpt6_profile(model_id: str) -> str | None:
+    name = re.sub(r"-\d{4}-\d{2}-\d{2}$", "", model_id)
+    return name if name in _GPT6_SUPPORTS_NONE else None
+
 
 def _choices(*values: str) -> tuple[OptionChoice, ...]:
     return tuple(
@@ -50,6 +67,8 @@ def _is_chat_model(model_id: str) -> bool:
 
 
 def _max_output_tokens(model_id: str) -> int:
+    if _gpt6_profile(model_id):
+        return 128_000
     if model_id.startswith("gpt-4o"):
         return 16_384
     if model_id.startswith("gpt-4.1"):
@@ -67,7 +86,7 @@ def _model_capabilities(model_id: str) -> frozenset[Capability]:
         Capability.STRUCTURED_OUTPUT,
         Capability.IMAGE_INPUT,
     }
-    if model_id.startswith(("gpt-5", "o1", "o3", "o4")):
+    if _gpt6_profile(model_id) or model_id.startswith(("gpt-5", "o1", "o3", "o4")):
         capabilities.add(Capability.REASONING)
     return frozenset(capabilities)
 
@@ -80,13 +99,17 @@ def _option_schema(model_id: str) -> tuple[OptionSchema, ...]:
             kind=OptionKind.INTEGER,
             label="Maximum output tokens",
             default=min(2048, maximum),
-            description="Maximum number of tokens generated for the response.",
+            description="Maximum generated tokens, including reasoning tokens.",
             minimum=1,
             maximum=maximum,
             step=128,
         )
     ]
-    if model_id.startswith("gpt-5.6"):
+    gpt6_profile = _gpt6_profile(model_id)
+    if gpt6_profile or model_id.startswith("gpt-5.6"):
+        efforts: tuple[str, ...] = ("low", "medium", "high", "xhigh", "max")
+        if gpt6_profile is None or _GPT6_SUPPORTS_NONE[gpt6_profile]:
+            efforts = ("none", *efforts)
         options.extend(
             [
                 OptionSchema(
@@ -95,7 +118,7 @@ def _option_schema(model_id: str) -> tuple[OptionSchema, ...]:
                     label="Reasoning effort",
                     default="medium",
                     description="Higher effort can improve difficult answers.",
-                    choices=_choices("none", "low", "medium", "high", "xhigh", "max"),
+                    choices=_choices(*efforts),
                 ),
                 OptionSchema(
                     key="reasoning_mode",
@@ -144,7 +167,13 @@ def _option_schema(model_id: str) -> tuple[OptionSchema, ...]:
                 choices=_choices("low", "medium", "high"),
             )
         )
-    else:
+    # Future GPT-6 variants have unverified controls. Let the server use defaults.
+    if (gpt6_profile and _GPT6_SUPPORTS_NONE[gpt6_profile]) or not model_id.startswith(
+        ("gpt-5", "gpt-6", "o1", "o3", "o4")
+    ):
+        sampling_condition = (
+            OptionCondition("reasoning_effort", "none") if gpt6_profile else None
+        )
         options.extend(
             [
                 OptionSchema(
@@ -156,6 +185,7 @@ def _option_schema(model_id: str) -> tuple[OptionSchema, ...]:
                     minimum=0.0,
                     maximum=2.0,
                     step=0.1,
+                    visible_when=sampling_condition,
                 ),
                 OptionSchema(
                     key="top_p",
@@ -166,6 +196,7 @@ def _option_schema(model_id: str) -> tuple[OptionSchema, ...]:
                     minimum=0.0,
                     maximum=1.0,
                     step=0.05,
+                    visible_when=sampling_condition,
                 ),
             ]
         )
@@ -200,10 +231,30 @@ class OpenAIProvider:
         return self._client
 
     def discover_models(self) -> Sequence[ModelInfo]:
+        # A gateway alias is a routing name, not evidence of model capabilities.
+        try:
+            aliases = json.loads(os.getenv("OPENAI_MODEL_ALIASES") or "{}")
+        except json.JSONDecodeError as error:
+            raise ProviderConfigurationError(
+                "OPENAI_MODEL_ALIASES must be a JSON object mapping IDs to model names."
+            ) from error
+        if not isinstance(aliases, dict) or not all(
+            isinstance(key, str) and isinstance(value, str) and key and value
+            for key, value in aliases.items()
+        ):
+            raise ProviderConfigurationError(
+                "OPENAI_MODEL_ALIASES must map nonempty IDs to nonempty model names."
+            )
+
+        def canonical_id(model_id: str) -> str:
+            return str(aliases.get(model_id, model_id)).removeprefix("openai/")
+
         try:
             result = self._get_client().models.list()
             model_ids = sorted(
-                model.id for model in result.data if _is_chat_model(model.id)
+                model.id
+                for model in result.data
+                if _is_chat_model(canonical_id(model.id))
             )
         except ProviderConfigurationError:
             raise
@@ -222,8 +273,8 @@ class OpenAIProvider:
                 id=model_id,
                 label=model_id,
                 description="Available through the OpenAI Responses API.",
-                capabilities=_model_capabilities(model_id),
-                options=_option_schema(model_id),
+                capabilities=_model_capabilities(canonical_id(model_id)),
+                options=_option_schema(canonical_id(model_id)),
             )
             for model_id in model_ids
         )
