@@ -140,6 +140,24 @@ Container** so the updated container settings take effect.
 
 ## Quality checks
 
+Runtime dependencies are pinned in `src/requirements.txt`; `requirements-dev.txt`
+sets the minimum tested development-tool versions. After pulling dependency
+updates, refresh the environment with:
+
+```bash
+python -m pip install --upgrade -r requirements-dev.txt
+```
+
+The OpenAI 3 SDK uses HTTPX2, including for custom clients and request mocks; see
+the [OpenAI Python SDK documentation](https://developers.openai.com/api/reference/python).
+Anthropic 2 uses API version `2026-10-21`, which removes sampling parameters, so
+Claude's controls now offer output limits and supported thinking options without
+`temperature`, `top_p`, or `top_k`. Anthropic-compatible gateways must accept this
+API version and API keys sent as `Authorization: Bearer` rather than `X-Api-Key`.
+See the [Anthropic migration guide](https://platform.claude.com/docs/en/api/migration-2026-10-21).
+The provider tests exercise discovery and streaming through both SDKs with mocked
+HTTP responses; they do not require API keys or a running gateway.
+
 Run the complete local verification suite from the repository root:
 
 ```bash
